@@ -1,3 +1,4 @@
+
 import cv2
 import argparse
 import multiprocessing as mp
@@ -24,37 +25,41 @@ def gstreamer_camera(queue):
     
     while True:
         ret, frame = cap.read()
-        
+        file = open('/home/nanoboy/gRPC-with-protobuf/status.txt','r')
+        mode = file.read()
+        if mode == '1' :
+            
         ### object detection
-        mp_object_detection = mp_2.solutions.object_detection
-        mp_drawing = mp_2.solutions.drawing_utils     
-        
-        with mp_object_detection.ObjectDetection(
-            min_detection_confidence=0.1) as object_detection:
+            mp_object_detection = mp_2.solutions.object_detection
+            mp_drawing = mp_2.solutions.drawing_utils     
+            
+            with mp_object_detection.ObjectDetection(
+                min_detection_confidence=0.1) as object_detection:
 
-            results = object_detection.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                results = object_detection.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
-            if results.detections:
-                for detection in results.detections:
-                    mp_drawing.draw_detection(frame, detection)
+                if results.detections:
+                    for detection in results.detections:
+                        mp_drawing.draw_detection(frame, detection)
         ### hand pose tracking
-        mp_hands = mp.solutions.hands
-        mp_drawing_styles = mp.solutions.drawing_styles
-        mp_drawing = mp.solutions.drawing_utils
+        elif mode =='2' :
+            mp_hands = mp_2.solutions.hands
+            mp_drawing_styles = mp_2.solutions.drawing_styles
+            mp_drawing = mp_2.solutions.drawing_utils
 
-        with mp_hands.Hands(
-            min_detection_confidence=0.5,
-            min_tracking_confidence=0.5) as hands:
+            with mp_hands.Hands(
+                min_detection_confidence=0.5,
+                min_tracking_confidence=0.5) as hands:
 
-            results = hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-            if results.multi_hand_landmarks:
-                for hand_landmarks in results.multi_hand_landmarks:
-                    mp_drawing.draw_landmarks(
-                        frame,
-                        hand_landmarks,
-                        mp_hands.HAND_CONNECTIONS,
-                        mp_drawing_styles.get_default_hand_landmarks_style(),
-                        mp_drawing_styles.get_default_hand_connections_style())
+                results = hands.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                if results.multi_hand_landmarks:
+                    for hand_landmarks in results.multi_hand_landmarks:
+                        mp_drawing.draw_landmarks(
+                            frame,
+                            hand_landmarks,
+                            mp_hands.HAND_CONNECTIONS,
+                            mp_drawing_styles.get_default_hand_landmarks_style(),
+                            mp_drawing_styles.get_default_hand_connections_style())
         ### 
         
         if not ret:
